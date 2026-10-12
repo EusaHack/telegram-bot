@@ -39,6 +39,7 @@ bot.command("start", async (ctx) => {
     "📦 /pm2 - Procesos PM2\n" +
     "📄 /logs - Logs de la aplicación\n" +
     "🚀 /deploy - Actualizar aplicación\n" +
+    "📅 /cita [ID] [ESTADO] - Cambiar estado de una cita\n" +
     "📋 /help - Ayuda"
   );
 });
@@ -49,7 +50,8 @@ bot.command("help", async (ctx) => {
     "/server\n" +
     "/pm2\n" +
     "/logs\n" +
-    "/deploy"
+    "/deploy" +
+    "/cita [ID] [ESTADO]\n"
   );
 });
 
