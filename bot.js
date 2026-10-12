@@ -6,6 +6,10 @@ const serverCommand = require("./commands/server");
 const pm2Command = require("./commands/pm2");
 const logsCommand = require("./commands/logs");
 const deployCommand = require("./commands/deploy");
+const {
+  citaCommand,
+  confirmarCita
+} = require("./commands/cita");
 
 const TOKEN = process.env.TELEGRAM_TOKEN;
 const USER_ID = String(process.env.TELEGRAM_USER_ID);
@@ -53,6 +57,8 @@ bot.command("server", serverCommand);
 bot.command("pm2", pm2Command);
 bot.command("logs", logsCommand);
 bot.command("deploy", deployCommand);
+bot.command("cita", citaCommand);
+bot.command("confirmarcita", confirmarCita);
 
 bot.catch((error) => {
   console.error("Error del bot:", error);
