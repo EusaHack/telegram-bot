@@ -11,6 +11,13 @@ const {
   confirmarCita
 } = require("./commands/cita");
 
+const {
+  ec2Status,
+  ec2Restart,
+  ec2Confirmar
+} = require("./commands/ec2");
+
+
 const TOKEN = process.env.TELEGRAM_TOKEN;
 const USER_ID = String(process.env.TELEGRAM_USER_ID);
 
@@ -40,6 +47,8 @@ bot.command("start", async (ctx) => {
     "📄 /logs - Logs de la aplicación\n" +
     "🚀 /deploy - Actualizar aplicación\n" +
     "📅 /cita [ID] [ESTADO] - Cambiar estado de una cita\n" +
+    "☁️ /ec2_status - Estado del servidor Odoo\n" +
+"🔄 /ec2_restart - Reiniciar servidor Odoo\n" +
     "📋 /help - Ayuda"
   );
 });
@@ -51,7 +60,9 @@ bot.command("help", async (ctx) => {
     "/pm2\n" +
     "/logs\n" +
     "/deploy" +
-    "/cita [ID] [ESTADO]\n"
+    "/cita [ID] [ESTADO]\n" +
+    "/ec2_status - Consultar EC2\n" +
+"/ec2_restart - Solicitar reinicio EC2\n"
   );
 });
 
@@ -61,6 +72,9 @@ bot.command("logs", logsCommand);
 bot.command("deploy", deployCommand);
 bot.command("cita", citaCommand);
 bot.command("confirmarcita", confirmarCita);
+bot.command("ec2_status", ec2Status);
+bot.command("ec2_restart", ec2Restart);
+bot.command("ec2_confirmar", ec2Confirmar);
 
 bot.catch((error) => {
   console.error("Error del bot:", error);
