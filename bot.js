@@ -2,6 +2,11 @@ require("dotenv").config();
 
 const { Bot } = require("node-telegram-bot-api");
 
+const serverCommand = require("./commands/server");
+const pm2Command = require("./commands/pm2");
+const logsCommand = require("./commands/logs");
+const deployCommand = require("./commands/deploy");
+
 const TOKEN = process.env.TELEGRAM_TOKEN;
 const USER_ID = String(process.env.TELEGRAM_USER_ID);
 
@@ -11,58 +16,49 @@ if (!TOKEN || !process.env.TELEGRAM_USER_ID) {
 
 const bot = new Bot(TOKEN);
 
-// Middleware de seguridad
+// Seguridad: solo tu usuario y chat privado
 bot.use(async (ctx, next) => {
-  const userId = String(ctx.from?.id ?? "");
-  const chatType = ctx.chat?.type;
-
-  if (userId !== USER_ID || chatType !== "private") {
-    console.log("Acceso no autorizado:", userId);
+  if (
+    String(ctx.from?.id) !== USER_ID ||
+    ctx.chat?.type !== "private"
+  ) {
     return;
   }
 
   await next();
 });
 
-// Comando /start
 bot.command("start", async (ctx) => {
   await ctx.reply(
-    "🤖 Administrador de servidor activo.\n\n" +
-    "Comandos disponibles:\n" +
-    "/start - Iniciar bot\n" +
-    "/status - Estado del bot\n" +
-    "/help - Mostrar ayuda"
+    "🤖 ADMINISTRADOR VPS\n\n" +
+    "🖥 /server - Estado del servidor\n" +
+    "📦 /pm2 - Procesos PM2\n" +
+    "📄 /logs - Logs de la aplicación\n" +
+    "🚀 /deploy - Actualizar aplicación\n" +
+    "📋 /help - Ayuda"
   );
 });
 
-// Comando /status
-bot.command("status", async (ctx) => {
-  const uptime = Math.floor(process.uptime());
-
-  await ctx.reply(
-    "✅ Bot funcionando correctamente\n" +
-    `⏱ Tiempo activo: ${uptime} segundos\n` +
-    `🟢 Node.js: ${process.version}`
-  );
-});
-
-// Comando /help
 bot.command("help", async (ctx) => {
   await ctx.reply(
-    "📋 Comandos disponibles:\n\n" +
-    "/start\n" +
-    "/status\n" +
-    "/help"
+    "📋 COMANDOS DISPONIBLES\n\n" +
+    "/server\n" +
+    "/pm2\n" +
+    "/logs\n" +
+    "/deploy"
   );
 });
 
-// Manejo de errores
+bot.command("server", serverCommand);
+bot.command("pm2", pm2Command);
+bot.command("logs", logsCommand);
+bot.command("deploy", deployCommand);
+
 bot.catch((error) => {
   console.error("Error del bot:", error);
 });
 
-// Iniciar long polling
-console.log("Iniciando bot de Telegram v2...");
+console.log("🤖 Bot administrador iniciado");
 
 bot.startPolling().catch((error) => {
   console.error("Error de polling:", error);
