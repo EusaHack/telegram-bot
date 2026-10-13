@@ -2,28 +2,36 @@
 const { Client } = require("pg");
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 
 const rdsCA = fs.readFileSync(
   path.join(__dirname, "../certs/rds-global-bundle.pem"),
   "utf8"
 );
 
-const crypto = require("node:crypto");
-
-async function consultarFechaOdoo(ctx) {
-  const client = new Client({
+// Función reutilizable para conectarse a PostgreSQL
+function crearClientePostgres() {
+  return new Client({
     host: process.env.ODOO_DB_HOST,
     port: 5432,
     user: process.env.ODOO_DB_USER,
     password: process.env.ODOO_DB_PASSWORD,
     database: process.env.ODOO_DB_NAME,
+
     connectionTimeoutMillis: 10000,
     statement_timeout: 10000,
+
     ssl: {
       ca: rdsCA,
       rejectUnauthorized: true
     }
   });
+}
+
+
+async function consultarFechaOdoo(ctx) {
+
+  const client = crearClientePostgres();
 
   try {
     await ctx.reply("🔎 Consultando PostgreSQL de Odoo...");
@@ -94,6 +102,7 @@ async function solicitarUpdate(ctx) {
 }
 
 async function confirmarUpdate(ctx) {
+
   const clave = `${ctx.chat.id}:${ctx.from.id}`;
   const pendiente = cambiosPendientes.get(clave);
   const codigo = ctx.message.text.trim().split(/\s+/)[1];
