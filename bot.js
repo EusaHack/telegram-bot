@@ -62,7 +62,7 @@ bot.command("help", async (ctx) => {
     "/deploy" +
     "/cita [ID] [ESTADO]\n" +
     "/ec2_status - Consultar EC2\n" +
-"/ec2_restart - Solicitar reinicio EC2\n"
+    "/ec2_restart - Solicitar reinicio EC2\n"
   );
 });
 
