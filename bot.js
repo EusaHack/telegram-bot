@@ -19,6 +19,12 @@ const {
 const { registerOdooCommands } = require("./commands/odoo");
 const { consultarFechaOdoo } = require("./commands/odooDatabase");
 
+const {
+  solicitarUpdate,
+  confirmarUpdate
+} = require("./commands/odooDatabase");
+
+
 
 const TOKEN = process.env.TELEGRAM_TOKEN;
 const USER_ID = String(process.env.TELEGRAM_USER_ID);
@@ -64,7 +70,8 @@ bot.command("start", async (ctx) => {
     "🐳 ODOO\n" +
     "/odoo_restart - Reiniciar contenedor Docker Odoo\n" +
     "/odoo_confirmar CODIGO - Confirmar reinicio Odoo\n" +
-    "🗄 /odoo_db_fecha - Consultar parámetro de BD Odoo\n\n"+
+    "🗄 /odoo_db_fecha - Consultar parámetro de BD Odoo\n"+
+    "/odoo_update_fecha AAAA-MM-DD - Actualizar parámetro de BD Odoo\n\n"+
 
     "📋 /help - Ver todos los comandos"
   );
@@ -110,7 +117,8 @@ bot.command("help", async (ctx) => {
 
     "🔐 /odoo_confirmar CODIGO\n" +
     "Confirmar reinicio del contenedor Odoo.\n" +
-    "🗄 /odoo_db_fecha - Consultar parámetro de BD Odoo\n\n"+
+    "🗄 /odoo_db_fecha - Consultar parámetro de BD Odoo\n"+
+    "/odoo_update_fecha AAAA-MM-DD - Actualizar parámetro de BD Odoo\n\n"+
 
     "⚠️ Los reinicios requieren confirmación."
   );
@@ -128,6 +136,8 @@ bot.command("ec2_restart", ec2Restart);
 bot.command("ec2_confirmar", ec2Confirmar);
 registerOdooCommands(bot);
 bot.command("odoo_db_fecha", consultarFechaOdoo);
+bot.command("odoo_update_fecha", solicitarUpdate);
+bot.command("odoo_update_confirmar", confirmarUpdate);
 
 bot.catch((error) => {
   console.error("Error del bot:", error);

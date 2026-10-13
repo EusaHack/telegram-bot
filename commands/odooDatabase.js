@@ -8,6 +8,8 @@ const rdsCA = fs.readFileSync(
   "utf8"
 );
 
+const crypto = require("node:crypto");
+
 async function consultarFechaOdoo(ctx) {
   const client = new Client({
     host: process.env.ODOO_DB_HOST,
@@ -60,4 +62,83 @@ async function consultarFechaOdoo(ctx) {
   }
 }
 
-module.exports = { consultarFechaOdoo };
+
+const cambiosPendientes = new Map();
+
+async function solicitarUpdate(ctx) {
+  const fecha = ctx.message.text.trim().split(/\s+/)[1];
+
+  if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    return ctx.reply(
+      "Uso: /odoo_update_fecha AAAA-MM-DD"
+    );
+  }
+
+  const codigo = crypto.randomInt(100000, 1000000).toString();
+  const clave = `${ctx.chat.id}:${ctx.from.id}`;
+
+  cambiosPendientes.set(clave, {
+    codigo,
+    fecha,
+    expira: Date.now() + 120000
+  });
+
+  await ctx.reply(
+    "⚠️ CONFIRMAR ACTUALIZACIÓN\n\n" +
+    "Base de datos: FarinaActual\n" +
+    "Parámetro: mi_erp.fecha_prueba\n" +
+    `Nuevo valor: ${fecha}\n\n` +
+    `Confirma con:\n/odoo_update_confirmar ${codigo}\n\n` +
+    "El código caduca en 2 minutos."
+  );
+}
+
+async function confirmarUpdate(ctx) {
+  const clave = `${ctx.chat.id}:${ctx.from.id}`;
+  const pendiente = cambiosPendientes.get(clave);
+  const codigo = ctx.message.text.trim().split(/\s+/)[1];
+
+  if (!pendiente || Date.now() > pendiente.expira) {
+    cambiosPendientes.delete(clave);
+    return ctx.reply("No hay actualización pendiente o ha expirado.");
+  }
+
+  if (codigo !== pendiente.codigo) {
+    return ctx.reply("Código incorrecto.");
+  }
+
+  cambiosPendientes.delete(clave);
+
+  const client = crearClientePostgres();
+
+  try {
+    await client.connect();
+
+    const resultado = await client.query(
+      `UPDATE ir_config_parameter
+       SET value = $1
+       WHERE key = $2
+       RETURNING key, value`,
+      [pendiente.fecha, "database.expiration_date"]
+    );
+
+    if (resultado.rowCount === 0) {
+      return ctx.reply(
+        "No se encontró el parámetro. No se modificaron registros."
+      );
+    }
+
+    await ctx.reply(
+      "✅ ACTUALIZACIÓN EXITOSA\n\n" +
+      `Parámetro: ${resultado.rows[0].key}\n` +
+      `Nuevo valor: ${resultado.rows[0].value}`
+    );
+  } catch (error) {
+    console.error("Error UPDATE PostgreSQL:", error);
+    await ctx.reply("❌ Error al actualizar PostgreSQL.");
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
+module.exports = { consultarFechaOdoo, solicitarUpdate, confirmarUpdate };
