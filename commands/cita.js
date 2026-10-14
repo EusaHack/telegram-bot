@@ -8,7 +8,7 @@ const SCRIPT = path.resolve(
   "../scripts/cambiar_cita.py"
 );
 
-const ESTADOS_PERMITIDOS = new Set(["pending"]);
+const ESTADOS_PERMITIDOS = new Set(["draft","queued","pending","arrived","sample_start","cancelled"]);
 const pendientes = new Map();
 const enEjecucion = new Set();
 
